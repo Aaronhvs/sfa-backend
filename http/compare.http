@@ -1,0 +1,12 @@
+### Comparar dos jugadores (última temporada)
+GET http://localhost:8000/api/v1/compare?player_a=1&player_b=2
+
+###
+
+### Comparar dos jugadores en temporada específica
+GET http://localhost:8000/api/v1/compare?player_a=1&player_b=2&season=2024-25
+
+###
+
+### Jugador inexistente en comparación (espera 404)
+GET http://localhost:8000/api/v1/compare?player_a=1&player_b=999999
