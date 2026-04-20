@@ -7,11 +7,8 @@ services:
       dockerfile: enviroments/production/Dockerfile
     ports:
       - "8000:8000"
-    environment:
-      APP_ENV: production
-      DATABASE_URL: postgresql+asyncpg://sfa:sfa@db:5432/sfa
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
+    env_file:
+      - .env.prod
     depends_on:
       - db
       - redis
@@ -37,11 +34,8 @@ services:
     build:
       context: .
       dockerfile: enviroments/production/Dockerfile
-    environment:
-      APP_ENV: production
-      DATABASE_URL: postgresql+asyncpg://sfa:sfa@db:5432/sfa
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
+    env_file:
+      - .env.prod
     depends_on:
       - db
       - redis

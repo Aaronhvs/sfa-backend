@@ -9,10 +9,6 @@ services:
       - "8000:8000"
     env_file:
       - .env
-    environment:
-      DATABASE_URL: postgresql+asyncpg://sfa:sfa@db:5432/sfa
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
     depends_on:
       - db
       - redis
@@ -42,10 +38,6 @@ services:
       dockerfile: enviroments/development/Dockerfile
     env_file:
       - .env
-    environment:
-      DATABASE_URL: postgresql+asyncpg://sfa:sfa@db:5432/sfa
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
     depends_on:
       - db
       - redis
@@ -59,10 +51,6 @@ services:
       dockerfile: enviroments/development/Dockerfile
     env_file:
       - .env
-    environment:
-      DATABASE_URL: postgresql+asyncpg://sfa:sfa@db:5432/sfa
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
     depends_on:
       - db
       - redis

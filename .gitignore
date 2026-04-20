@@ -2,6 +2,8 @@ venv/
 _pycache_/
 *.pyc
 .env
+.env.prod
+.env.local
 .DS_Store
 .vscode/
 # AI agent context exclusion — legacy scripts
