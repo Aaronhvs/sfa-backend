@@ -15,6 +15,12 @@ celery_app.conf.beat_schedule = {
         "schedule": crontab(hour="*/8"),
         "args": (2024,),
     },
+    "enrich-all-every-12h": {
+        # Runs at 2am and 2pm UTC — offset from ingestion (0, 8, 16 UTC)
+        "task": "sfa.tasks.enrichment_tasks.enrich_all_task",
+        "schedule": crontab(hour="2,14"),
+        "args": ("2024", 2024),
+    },
 }
 
 celery_app.conf.timezone = "UTC"

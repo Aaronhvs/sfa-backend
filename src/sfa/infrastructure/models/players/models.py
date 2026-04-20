@@ -18,3 +18,9 @@ class Player(Base):
         Enum(Position, native_enum=False), nullable=False
     )
     photo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    fbref_id: Mapped[str | None] = mapped_column(String(150), nullable=True, unique=True)
+    understat_id: Mapped[int | None] = mapped_column(Integer, nullable=True, unique=True)
+
+    # Migration:
+    # ALTER TABLE players ADD COLUMN fbref_id VARCHAR(150) UNIQUE;
+    # ALTER TABLE players ADD COLUMN understat_id INTEGER UNIQUE;
