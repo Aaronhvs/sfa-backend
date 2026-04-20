@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from sqlalchemy import text
 
+from sfa.api.v1.admin import router as admin_router
 from sfa.api.v1.compare import router as compare_router
 from sfa.api.v1.competitions import router as competitions_router
 from sfa.api.v1.health import router as health_router
@@ -25,6 +26,7 @@ tags_metadata = [
     {"name": "compare", "description": "Comparación head-to-head entre dos jugadores"},
     {"name": "status", "description": "Estado del sistema"},
     {"name": "health", "description": "Health check de infraestructura"},
+    {"name": "admin", "description": "Administración: disparar ingestas manualmente"},
 ]
 
 
@@ -64,3 +66,4 @@ app.include_router(players_router, prefix="/api/v1", tags=["players"])
 app.include_router(competitions_router, prefix="/api/v1", tags=["competitions"])
 app.include_router(compare_router, prefix="/api/v1", tags=["compare"])
 app.include_router(status_router, prefix="/api/v1", tags=["status"])
+app.include_router(admin_router, prefix="/api/v1", tags=["admin"])

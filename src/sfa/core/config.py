@@ -11,6 +11,8 @@ class BaseConfig(BaseSettings):
     APP_VERSION: str = "0.1.0"
     DEBUG: bool = False
     SECRET_KEY: str
+    API_FOOTBALL_KEY: str = ""
+    API_FOOTBALL_BASE_URL: str = "https://v3.football.api-sports.io"
 
     def model_post_init(self, __context) -> None:
         if not self.SECRET_KEY:

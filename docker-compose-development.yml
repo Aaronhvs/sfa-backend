@@ -53,5 +53,22 @@ services:
     volumes:
       - .:/code
 
+  celery_beat:
+    build:
+      context: .
+      dockerfile: enviroments/development/Dockerfile
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://sfa:sfa@db:5432/sfa
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    command: celery -A sfa.celery_app beat --loglevel=info
+    volumes:
+      - .:/code
+
 volumes:
   postgres_data:

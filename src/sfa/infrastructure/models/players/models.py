@@ -9,6 +9,7 @@ class Player(Base):
     __tablename__ = "players"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    external_id: Mapped[int | None] = mapped_column(Integer, nullable=True, unique=True)
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     team_id: Mapped[int] = mapped_column(
         ForeignKey("teams.id", ondelete="RESTRICT"), nullable=False
