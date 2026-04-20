@@ -4,7 +4,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: ./django/development/Dockerfile
+      dockerfile: enviroments/development/Dockerfile
     ports:
       - "8000:8000"
     env_file:
@@ -39,7 +39,7 @@ services:
   celery_worker:
     build:
       context: .
-      dockerfile: ./django/development/Dockerfile
+      dockerfile: enviroments/development/Dockerfile
     env_file:
       - .env
     environment:

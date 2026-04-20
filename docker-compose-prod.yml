@@ -4,7 +4,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: ./django/production/Dockerfile
+      dockerfile: enviroments/production/Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -36,7 +36,7 @@ services:
   celery_worker:
     build:
       context: .
-      dockerfile: ./django/production/Dockerfile
+      dockerfile: enviroments/production/Dockerfile
     environment:
       APP_ENV: production
       DATABASE_URL: postgresql+asyncpg://sfa:sfa@db:5432/sfa
