@@ -12,7 +12,8 @@ from sfa.api.v1.players import router as players_router
 from sfa.api.v1.ranking import router as ranking_router
 from sfa.api.v1.status import router as status_router
 from sfa.core.config import get_settings
-from sfa.infrastructure.database import AsyncSessionLocal
+from sfa.infrastructure.database import AsyncSessionLocal, engine
+from sfa.infrastructure.models import Base  # noqa: F401 — also registers all SQLAlchemy models
 from sfa.infrastructure.redis_client import get_redis_client
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,10 @@ tags_metadata = [
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    logger.info("Database schema: OK")
+
     try:
         async with AsyncSessionLocal() as session:
             await session.execute(text("SELECT 1"))

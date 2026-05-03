@@ -1,3 +1,4 @@
+from sfa.infrastructure.database import Base
 from sfa.infrastructure.models.enums import EventType, IngestionStatus, Position
 from sfa.infrastructure.models.competitions.models import Competition, CompetitionStage
 from sfa.infrastructure.models.teams.models import Team
@@ -10,6 +11,7 @@ from sfa.infrastructure.models.scores.models import SFASeasonScore
 from sfa.infrastructure.models.ingestion.models import IngestionLog
 
 __all__ = [
+    "Base",
     "Position",
     "EventType",
     "IngestionStatus",

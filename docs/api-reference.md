@@ -1,302 +1,274 @@
-# SFA API — Reference
+# API Reference — SFA Backend
 
-Base URL: `http://localhost:8000`  
-Interactive docs: `/docs` (Swagger UI) · `/redoc` (ReDoc)
+Referencia rapida de todos los endpoints. Base URL: `http://localhost:8000/api/v1`
+
+Para documentacion detallada (por que existe cada endpoint, flujo interno, errores)
+ver [`guia-tecnica.md`](./guia-tecnica.md).
+
+Para ejecutar los ejemplos sin escribir curl, usar los archivos `.http` en `http/`
+con VS Code REST Client (`humao.rest-client`) o JetBrains HTTP Client.
+
+---
+
+## Health y Status
+
+### GET /health
+Verifica conexion a PostgreSQL y Redis.
+
+```
+GET /api/v1/health
+```
+
+Respuesta: `{"status":"ok","database":"connected","redis":"connected","version":"0.1.0","env":"development"}`
+
+Archivo: [`http/status.http`](../http/status.http)
+
+---
+
+### GET /status
+Resumen de datos en el sistema: jugadores, scores, competiciones, eventos.
+
+```
+GET /api/v1/status
+```
+
+Respuesta: `{"status":"ok","season":"2024","players":342,"scores":510,"competitions":6,"events":1850,"api_version":"0.1.0"}`
+
+Archivo: [`http/status.http`](../http/status.http)
 
 ---
 
 ## Ranking
 
-### `GET /api/v1/ranking`
+### GET /ranking
 
-Returns a ranked list of players ordered by SFA points for a given season.
+| Param | Tipo | Default | Descripcion |
+|---|---|---|---|
+| `season` | string | ultima disponible | Ej: `"2024"` |
+| `position` | string | todas | `DEL` `EXT` `MC` `DC` `LAT` `GK` |
+| `competition_id` | int | todas | ID interno de competicion |
+| `limit` | int | 50 | Max 200 |
 
-**Query parameters**
-
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `season` | string | latest available | Season in `YYYY-YY` format, e.g. `2024-25` |
-| `position` | string | — | Filter by position: `DEL`, `EXT`, `MC`, `DC`, `LAT`, `GK` |
-| `competition_id` | integer | — | Filter by competition ID |
-| `limit` | integer | `50` | Number of results (1–200) |
-
-**Response `200`**
-
-```json
-{
-  "season": "2024-25",
-  "total": 48,
-  "ranking": [
-    {
-      "rank": 1,
-      "id": 12,
-      "name": "Vinícius Jr.",
-      "team": "Real Madrid",
-      "position": "EXT",
-      "competition": "La Liga",
-      "sfa_pts": 18420.00,
-      "matches": 28,
-      "photo_url": "https://example.com/photo.png"
-    }
-  ]
-}
+```
+GET /api/v1/ranking
+GET /api/v1/ranking?season=2024&position=DEL&limit=10
+GET /api/v1/ranking?competition_id=1
 ```
 
-**Status codes:** `200 OK` · `422 Unprocessable Entity` (invalid query params)
+Respuesta: `{"season":"2024","total":342,"ranking":[{"rank":1,"id":47,"name":"...","sfa_pts":12450.75,...}]}`
+
+Archivo: [`http/ranking.http`](../http/ranking.http)
 
 ---
 
 ## Players
 
-### `GET /api/v1/players/{player_id}`
+### GET /players/{player_id}
 
-Returns full season detail for a player, including global rank and breakdown by event type.
+Perfil completo: score, partidos, rank global, breakdown por tipo de accion.
 
-**Path parameters**
+| Param | Tipo | Default | Descripcion |
+|---|---|---|---|
+| `player_id` | path int | — | ID interno del jugador |
+| `season` | string | ultima | Ej: `"2024"` |
 
-| Name | Type | Description |
-|------|------|-------------|
-| `player_id` | integer | Player ID |
-
-**Query parameters**
-
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `season` | string | latest available for the player | Season in `YYYY-YY` format |
-
-**Response `200`**
-
-```json
-{
-  "id": 12,
-  "name": "Vinícius Jr.",
-  "team": "Real Madrid",
-  "position": "EXT",
-  "competition": "La Liga",
-  "sfa_pts": 18420.00,
-  "matches": 28,
-  "photo_url": "https://example.com/photo.png",
-  "global_rank": 1,
-  "season": "2024-25",
-  "breakdown": {
-    "goal": { "count": 18, "pts": 12000.00 },
-    "assist": { "count": 6, "pts": 4200.00 }
-  },
-  "competitions": ["La Liga", "Champions League"]
-}
+```
+GET /api/v1/players/47
+GET /api/v1/players/47?season=2024
 ```
 
-**Status codes:** `200 OK` · `404 Not Found` · `422 Unprocessable Entity`
+Errores: `404` si el jugador no existe.
+
+Archivo: [`http/players.http`](../http/players.http)
 
 ---
 
-### `GET /api/v1/players/{player_id}/events`
+### GET /players/{player_id}/events
 
-Returns all scored events for a player, ordered by date descending then minute ascending.
+Cada evento individual (gol, asistencia) con todos los multiplicadores M1-M4 y Mvisit.
 
-**Path parameters**
+| Param | Tipo | Default | Descripcion |
+|---|---|---|---|
+| `player_id` | path int | — | ID del jugador |
+| `season` | string | null | Filtrar por temporada |
+| `competition_id` | int | null | Filtrar por competicion |
 
-| Name | Type | Description |
-|------|------|-------------|
-| `player_id` | integer | Player ID |
-
-**Query parameters**
-
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `season` | string | — | Filter by season |
-| `competition_id` | integer | — | Filter by competition |
-
-**Response `200`**
-
-```json
-[
-  {
-    "id": 301,
-    "competition": "La Liga",
-    "stage": "regular",
-    "fixture_id": 88,
-    "home_team": "Real Madrid",
-    "away_team": "Barcelona",
-    "played_at": "2025-03-15T20:00:00Z",
-    "minute": 87,
-    "event_type": "goal",
-    "score_before": "0-0",
-    "score_diff": 0,
-    "m1": 1.05,
-    "m2": 1.00,
-    "m3": 2.50,
-    "m4": 1.54,
-    "mvisit": 1.30,
-    "pts": 6000.00
-  }
-]
+```
+GET /api/v1/players/47/events
+GET /api/v1/players/47/events?season=2024&competition_id=1
 ```
 
-**Status codes:** `200 OK` · `422 Unprocessable Entity`
+Archivo: [`http/players.http`](../http/players.http)
 
 ---
 
-### `GET /api/v1/players/{player_id}/fixtures`
+### GET /players/{player_id}/fixtures
 
-Returns a per-fixture summary of SFA points aggregated from all events in that match.
+Partidos del jugador con SFA pts acumulados por partido.
 
-**Path parameters**
+| Param | Tipo | Default | Descripcion |
+|---|---|---|---|
+| `player_id` | path int | — | ID del jugador |
+| `season` | string | null | Filtrar por temporada |
+| `competition_id` | int | null | Filtrar por competicion |
 
-| Name | Type | Description |
-|------|------|-------------|
-| `player_id` | integer | Player ID |
-
-**Query parameters**
-
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `season` | string | — | Filter by season |
-| `competition_id` | integer | — | Filter by competition |
-
-**Response `200`**
-
-```json
-[
-  {
-    "fixture_id": 88,
-    "competition": "La Liga",
-    "stage": "regular",
-    "home_team": "Real Madrid",
-    "away_team": "Barcelona",
-    "played_at": "2025-03-15T20:00:00Z",
-    "sfa_pts": 6000.00,
-    "events_count": 1
-  }
-]
+```
+GET /api/v1/players/47/fixtures
+GET /api/v1/players/47/fixtures?season=2024
 ```
 
-**Status codes:** `200 OK` · `422 Unprocessable Entity`
-
----
-
-## Competitions
-
-### `GET /api/v1/competitions`
-
-Returns all competitions sorted by name.
-
-**Response `200`**
-
-```json
-[
-  { "id": 1, "name": "La Liga", "country": "ESP", "factor": 1.00 },
-  { "id": 2, "name": "Champions League", "country": "EUR", "factor": 1.50 }
-]
-```
-
-**Status codes:** `200 OK`
-
----
-
-### `GET /api/v1/competitions/{competition_id}/standings`
-
-Returns the standings table for a competition at a specific matchday.
-
-**Path parameters**
-
-| Name | Type | Description |
-|------|------|-------------|
-| `competition_id` | integer | Competition ID |
-
-**Query parameters**
-
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `season` | string | latest available | Season in `YYYY-YY` format |
-| `matchday` | integer | latest available | Matchday number |
-
-**Response `200`**
-
-```json
-{
-  "competition": "La Liga",
-  "season": "2024-25",
-  "matchday": 29,
-  "standings": [
-    { "position": 1, "team": "Real Madrid", "points": 72 },
-    { "position": 2, "team": "Barcelona", "points": 68 }
-  ]
-}
-```
-
-**Status codes:** `200 OK` · `404 Not Found` (competition not found, or no standings for the given season/matchday) · `422 Unprocessable Entity`
+Archivo: [`http/players.http`](../http/players.http)
 
 ---
 
 ## Compare
 
-### `GET /api/v1/compare`
+### GET /compare
 
-Returns full player detail for two players side by side.
+Comparacion head-to-head entre dos jugadores. Devuelve dos `PlayerDetail` completos.
 
-**Query parameters**
+| Param | Tipo | Requerido | Descripcion |
+|---|---|---|---|
+| `player_a` | int | si | ID del primer jugador |
+| `player_b` | int | si | ID del segundo jugador |
+| `season` | string | no | Temporada |
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `player_a` | integer | yes | ID of the first player |
-| `player_b` | integer | yes | ID of the second player |
-| `season` | string | no | Season in `YYYY-YY` format |
-
-**Response `200`**
-
-```json
-{
-  "season": "2024-25",
-  "player_a": { "...same shape as GET /players/{id}..." },
-  "player_b": { "...same shape as GET /players/{id}..." }
-}
+```
+GET /api/v1/compare?player_a=47&player_b=9
+GET /api/v1/compare?player_a=47&player_b=9&season=2024
 ```
 
-**Status codes:** `200 OK` · `404 Not Found` (if either player is not found) · `422 Unprocessable Entity`
+Errores: `404` si cualquiera de los dos IDs no existe.
+
+Archivo: [`http/compare.http`](../http/compare.http)
 
 ---
 
-## Status
+## Competitions
 
-### `GET /api/v1/status`
+### GET /competitions
 
-Returns system-level counters and the current active season.
+Lista todas las competiciones con datos en la DB.
 
-**Response `200`**
-
-```json
-{
-  "status": "ok",
-  "season": "2024-25",
-  "players": 520,
-  "scores": 1040,
-  "competitions": 3,
-  "events": 8900,
-  "api_version": "1.0.0"
-}
+```
+GET /api/v1/competitions
 ```
 
-**Status codes:** `200 OK`
+Respuesta: `[{"id":1,"name":"La Liga","country":"ESP","comp_factor":1.0}, ...]`
+
+Archivo: [`http/competitions.http`](../http/competitions.http)
 
 ---
 
-## Health
+### GET /competitions/{competition_id}/standings
 
-### `GET /api/v1/health`
+Clasificacion de una liga en un momento dado.
 
-Verifies that the database and Redis connections are reachable.
+| Param | Tipo | Default | Descripcion |
+|---|---|---|---|
+| `competition_id` | path int | — | ID interno de la competicion |
+| `season` | string | null | Temporada |
+| `matchday` | int | null (ultimo) | Numero de jornada |
 
-**Response `200`**
-
-```json
-{
-  "status": "ok",
-  "database": "connected",
-  "redis": "connected",
-  "version": "1.0.0",
-  "env": "development"
-}
+```
+GET /api/v1/competitions/1/standings
+GET /api/v1/competitions/1/standings?season=2024&matchday=20
 ```
 
-**Status codes:** `200 OK` (always — check `database`/`redis` fields for actual connectivity)
+Errores: `404` si la competicion no existe o no tiene standings.
+
+Archivo: [`http/competitions.http`](../http/competitions.http)
+
+---
+
+## Admin
+
+Requieren que Celery worker este corriendo. Devuelven un `task_id` inmediatamente;
+la operacion real corre en background.
+
+### IDs de ligas (API-Football)
+
+| ID | Liga |
+|---|---|
+| 140 | La Liga |
+| 39 | Premier League |
+| 78 | Bundesliga |
+| 135 | Serie A |
+| 61 | Ligue 1 |
+| 2 | Champions League |
+
+---
+
+### POST /admin/ingest/{league_id}
+
+Ingesta completa de una liga: standings, fixtures, eventos, stats, SFA scores.
+
+```
+POST /api/v1/admin/ingest/140?season=2024
+```
+
+Respuesta: `{"task_id":"abc123","league_id":140,"season":2024}`
+
+---
+
+### POST /admin/ingest-all
+
+Ingesta de todas las ligas configuradas.
+
+```
+POST /api/v1/admin/ingest-all?season=2024
+```
+
+---
+
+### POST /admin/enrich-fbref/{competition_id}
+
+Enriquecimiento con estadisticas avanzadas de FBref. Requiere `competition_name`.
+El `competition_id` es el ID interno (de tu DB) — consultarlo con `GET /competitions`.
+
+```
+POST /api/v1/admin/enrich-fbref/1?competition_name=La%20Liga&season=2024
+```
+
+---
+
+### POST /admin/enrich-understat/{competition_id}
+
+Enriquecimiento con PSxG real de Understat. Champions League se salta automaticamente.
+
+```
+POST /api/v1/admin/enrich-understat/1?competition_name=La%20Liga&season=2024&season_int=2024
+```
+
+---
+
+### POST /admin/enrich-all
+
+FBref + Understat + Recalculo para todas las ligas en secuencia.
+
+```
+POST /api/v1/admin/enrich-all?season=2024&season_int=2024
+```
+
+---
+
+### POST /admin/recalculate/{competition_id}
+
+Recalcula SFA scores con los parametros actuales sin llamar a APIs externas.
+Util despues de modificar `BASE_POINTS_TABLE` o multiplicadores.
+
+```
+POST /api/v1/admin/recalculate/1?season=2024
+```
+
+---
+
+### GET /admin/ingestion-logs
+
+Estado de las ultimas ingestas. Pendiente de implementacion completa.
+
+```
+GET /api/v1/admin/ingestion-logs
+```
+
+Archivo para todos los endpoints admin: [`http/admin.http`](../http/admin.http)

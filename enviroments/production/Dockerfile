@@ -11,7 +11,7 @@ RUN python -m pip install --upgrade pip && \
 
 COPY . /code/
 
-COPY ./django/production/start /start
+COPY ./enviroments/production/start /start
 RUN sed -i 's/\r//' /start && chmod +x /start
 
 EXPOSE 8000

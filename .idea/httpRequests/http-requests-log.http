@@ -1,0 +1,30 @@
+POST http://localhost:8000/api/v1/admin/ingest/39?season=2024
+User-Agent: IntelliJ HTTP Client/PyCharm 2025.1.1.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2026-05-03T175037.200.json
+
+###
+
+POST http://localhost:8000/api/v1/admin/ingest/140?season=2024
+User-Agent: IntelliJ HTTP Client/PyCharm 2025.1.1.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2026-05-03T174904.200.json
+
+###
+
+POST http://localhost:8000/api/v1/admin/ingest/140?season=2024
+User-Agent: IntelliJ HTTP Client/PyCharm 2025.1.1.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2026-05-03T174405.200.json
+
+###
+
