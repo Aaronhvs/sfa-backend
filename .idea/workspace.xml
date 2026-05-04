@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="fe535469-20d0-446c-afdd-a01a30a526bd" name="Changes" comment="feat(enrichment): implement FBref + Understat enrichment pipeline (Phase 2)&#10;&#10;- Add domain ports and DTOs for FBref/Understat providers and enrichment&#10;  repository, keeping the enrichment layer cleanly separated from ingestion&#10;- Introduce fuzzy Jaccard name-matching service (normalize + token Jaccard +&#10;  surname bonus/penalty) extracted from legacy logic; handles accented names&#10;  and discards ambiguous matches&#10;- Implement FBrefScraper using httpx async + BeautifulSoup with data-stat&#10;  attribute parsing (avoids pandas dependency); 4s rate limit between requests&#10;  with 3-attempt retry&#10;- Implement UnderstatScraper extracting embedded JSON.parse() variable from&#10;  HTML; handles unicode_escape encoding for non-ASCII player names; 2s rate&#10;  limit&#10;- Add EnrichmentRepository with queries to find unmatched goal events, update&#10;  external IDs, update player_stats only where API-Football left zeros, and&#10;  apply delta-based season_score recalculation (preserves match-stats points&#10;  not stored as individual events)&#10;- Add three use cases: EnrichWithFBref (PSxG + season stats), EnrichWithUnderstat&#10;  (PSxG fallback skipping Champions League), RecalculateScores (delta approach&#10;  on M4 recalculation to avoid overwriting match-stats contribution)&#10;- Wire Celery tasks for per-league and full-pipeline enrichment; add beat&#10;  schedule at 2am/14pm UTC offset from ingestion hours (0/8/16 UTC)&#10;- Expose admin endpoints: /enrich-fbref, /enrich-understat, /enrich-all,&#10;  /recalculate for manual triggering&#10;- Extend Player model with fbref_id and understat_id nullable unique fields;&#10;  add migration SQL in comments&#10;- Add beautifulsoup4 and lxml to requirements" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="3AxG9qxza7rVXxjd2KzijeaaI2b" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;SFA-refactor-architecture&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/leonardoberoes/Documents/Personal/SFA/sfa-backend&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/specs/feature" />
+      <recent name="$PROJECT_DIR$/specs/refactor/0001-change-infra-to-use-docker" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-PY-251.25410.159" />
+        <option value="bundled-python-sdk-e0ed3721d81e-36ea0e71a18c-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.25410.159" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="fe535469-20d0-446c-afdd-a01a30a526bd" name="Changes" comment="" />
+      <created>1773526660099</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773526660099</updated>
+      <workItem from="1773526661196" duration="4526000" />
+      <workItem from="1773699593216" duration="876000" />
+      <workItem from="1773702303979" duration="2251000" />
+      <workItem from="1774222181347" duration="3183000" />
+      <workItem from="1774822177629" duration="7803000" />
+      <workItem from="1775492866621" duration="7000" />
+      <workItem from="1776644351534" duration="7867000" />
+    </task>
+    <task id="LOCAL-00001" summary="chore(repo): archive all source code into _archive/ — breakpoint snapshot&#10;&#10;- Move all legacy scripts (api_events_endpoint, api_football_ingest_v5, fetch_photos,&#10;  fix_positions, ingest_team, run, understat_merge_v2) into _archive/ to clean up the root&#10;- Move active backend/ package into _archive/ as a frozen reference snapshot&#10;  before a full rewrite or restructure begins&#10;- Add _archive/README.md documenting each file's purpose and intent&#10;- Update .gitignore to exclude _archive/ from future AI context and tracking&#10;&#10;BREAKING CHANGE: The backend/ package is no longer at the repo root. Any tooling,&#10;imports, or entry points referencing backend/ will break until the package is&#10;re-scaffolded in its new location.">
+      <option name="closed" value="true" />
+      <created>1773530332443</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1773530332443</updated>
+    </task>
+    <task id="LOCAL-00002" summary="feat(infra): bootstrap SFA backend infrastructure skeleton&#10;&#10;- Scaffold hexagonal project layout under src/sfa/ (api, core, infrastructure, domain)&#10;  to establish a clean separation of concerns from the start&#10;- Implement GET /api/v1/health endpoint that probes DB and Redis on every request,&#10;  returning connection status without ever crashing with a non-200&#10;- Configure three environment classes (Development/Production/Test) via pydantic-settings,&#10;  selected by APP_ENV, mirroring the Django DJANGO_SETTINGS_MODULE pattern;&#10;  SECRET_KEY raises ValueError at startup if missing&#10;- Wire async SQLAlchemy engine (asyncpg) and redis.asyncio client as FastAPI dependencies,&#10;  keeping infrastructure isolated from business logic&#10;- Add Celery stub wired to CELERY_BROKER_URL so worker containers can start immediately&#10;- Split requirements into base/local/production/test to avoid installing dev tools in prod&#10;- Add environment-specific Dockerfiles and executable start scripts under django/development&#10;  and django/production; set PYTHONPATH=/code/src in both images so the src/ layout&#10;  is resolved correctly inside containers (fixes ModuleNotFoundError: No module named 'sfa')&#10;- Provide docker-compose-development.yml and docker-compose-prod.yml with api, db&#10;  (postgres:16-alpine), redis (7-alpine), and celery_worker services&#10;- Add GitHub Actions CI job that spins up Postgres and Redis services, runs flake8,&#10;  isort, coverage (fail-under=80), and pytest&#10;- Configure flake8 (max 120, select E302/E501/F401/F821), isort (black profile),&#10;  and pytest (asyncio_mode=auto) so linters and tests are reproducible locally and in CI&#10;- Add tests/test_health.py with three async cases (all-ok, db-error, redis-error)&#10;  using dependency_overrides — no real infrastructure required to run the suite">
+      <option name="closed" value="true" />
+      <created>1773535196231</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1773535196231</updated>
+    </task>
+    <task id="LOCAL-00003" summary="feat(models): implement SFA v2.0 scoring schema changes&#10;&#10;- Add CORNER_ASSIST to EventType enum to distinguish corner assists from&#10;  regular assists, enabling correct 250 vs 500 pts base score assignment&#10;  per position without ambiguity in the SFASeasonScore breakdown&#10;- Add played_at (timestamptz, NOT NULL) and matchday (SmallInteger, nullable)&#10;  to Fixture so M1 can be resolved against the correct StandingSnapshot at&#10;  match time; matchday is nullable to support cups and playoffs&#10;- Add matchday column to StandingSnapshot and include it in the unique&#10;  constraint, enabling per-matchday snapshots required to compute M1&#10;  with historical accuracy instead of only end-of-season position&#10;- Rewrite PlayerStats to align with scoreable statistics: add xg, xa,&#10;  dribbles_won, interceptions, corner_assists; rename aerial_duels_won&#10;  to duels_won (total duels per API-Football); drop through_balls and&#10;  recoveries_own_half which carry zero pts weight in the v2.0 formula&#10;- Add mvisit (Numeric(3,2), default=1.0, CHECK IN (1.0, 1.3)) to&#10;  PlayerEvent to persist the away-team multiplier per event, enabling&#10;  full traceability and future recalculation of pts if the factor changes">
+      <option name="closed" value="true" />
+      <created>1774222199983</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1774222199983</updated>
+    </task>
+    <task id="LOCAL-00004" summary="feat(domain): implement SFA scoring engine domain layer&#10;&#10;- Add domain/scoring bounded context with four modules: value_objects,&#10;  entities, services, and a public __init__ re-export — no existing&#10;  files modified; the domain stays completely separate from infrastructure&#10;&#10;- Define PositionGroup (FW/MF/DF) and ActionType (15 actions) enums plus&#10;  position_to_group() which maps the 6 infra positions to scoring groups&#10;  and raises ValueError for GK, keeping the aggregate uncorruptible&#10;&#10;- Implement seven frozen-dataclass value objects (M1–M4, Mvisit,&#10;  CombinedMultiplier, SFAScore), each validating and clamping its&#10;  invariant at construction time so invalid states cannot be represented&#10;&#10;- Define BASE_POINTS_TABLE as the single source of truth for all&#10;  base-point values per group×action, including explicit 0 entries for&#10;  actions that do not apply to a group (CORNER_ASSIST, DRIBBLES_WON,&#10;  PROGRESSIVE_* etc.)&#10;&#10;- Introduce SFAScoringService with two calculation paths: score_event()&#10;  applies all five multipliers (M1–M4 + Mvisit) for individual events&#10;  (goals/assists); score_match_stats() applies only M1 × M2 for&#10;  per-match aggregated statistics that have no exact minute or PSxG&#10;&#10;- Add Player, ScoredEvent (both frozen), and PlayerSeasonScore aggregate&#10;  root whose total_pts is always derived from stored events, making it&#10;  impossible to desync total from the event list from outside the class&#10;&#10;- Validated against the document's worked example: van Dijk (DC, #3)&#10;  scores away vs Arsenal (#1) in min 87 drawing, Champions groups →&#10;  1500 × 4.0 (clamped) = 6000 pts">
+      <option name="closed" value="true" />
+      <created>1774223518205</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1774223518205</updated>
+    </task>
+    <task id="LOCAL-00005" summary="feat(api): implement REST API v1 — ranking, players, competitions, compare, status&#10;&#10;- Configure FastAPI with full OpenAPI metadata, Swagger UI at /docs, ReDoc at /redoc,&#10;  and openapi_tags grouping endpoints by domain so the interactive docs are useful&#10;  out of the box&#10;- Add Pydantic response schemas for all endpoints using ConfigDict(from_attributes=True)&#10;  for SQLAlchemy row compatibility; CompareResponseSchema reuses PlayerDetailSchema&#10;  to avoid duplicating the player shape&#10;- Implement GET /ranking with a single SQL query using RANK() OVER and optional&#10;  filters by position/competition/season — replaces the O(n) Python sort in legacy&#10;- Implement GET /players/{id} with global_rank computed via COUNT subquery instead&#10;  of a Python loop; GET /players/{id}/events now exposes m4 and mvisit absent in legacy;&#10;  GET /players/{id}/fixtures aggregates SUM(pts)/COUNT(*) per match — new endpoint&#10;  with no legacy equivalent&#10;- Extract _get_player_detail() as a shared internal function so GET /compare reuses&#10;  it for both players without duplicating query logic&#10;- Implement GET /competitions with competition_factor aliased as factor for client&#10;  compatibility; GET /competitions/{id}/standings resolves latest matchday via&#10;  MAX() subquery when the param is omitted — replaces the single-snapshot legacy approach&#10;- Implement GET /status running async COUNT(*) over each table and returning&#10;  system totals with the latest season and api_version from settings&#10;- Add REST Client .http files for manual testing of all endpoints including&#10;  filter variants and expected 404 cases&#10;- Add docs/api-reference.md as a black-box reference for external consumers,&#10;  independent of Swagger, documenting parameters, response shapes, and status codes">
+      <option name="closed" value="true" />
+      <created>1774225131682</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1774225131682</updated>
+    </task>
+    <task id="LOCAL-00006" summary="refactor(architecture): introduce hexagonal application + repository layers; wire use cases via FastAPI DI&#10;&#10;- Add application use cases (get_ranking, get_player_detail, get_player_events, get_player_fixtures, get_standings, list_competitions, get_status, compare_players) to move all business logic out of route handlers — previously inline SQL lived directly in the API layer&#10;- Add infrastructure repositories (PlayerRepository, SFAScoreRepository, CompetitionRepository, StandingRepository, PlayerEventRepository, SystemRepository) as the persistence adapters implementing domain ports&#10;- Add domain/ports.py to define the port interfaces that use cases depend on, decoupling application logic from SQLAlchemy&#10;- Expand dependencies.py to wire repositories and use cases as FastAPI async dependencies, keeping DI declarative and testable without touching route signatures&#10;- Slim all five API routers (ranking, players, competitions, status, compare) to thin HTTP adapters: inject use case via Depends, call execute(), map result to response schema&#10;- Add pythonpath = src to pytest.ini so test modules resolve imports correctly without editable install&#10;- Add specs with plan.md">
+      <option name="closed" value="true" />
+      <created>1776644523211</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1776644523211</updated>
+    </task>
+    <task id="LOCAL-00007" summary="refactor: rename /django environment folder to /environment&#10;&#10;BREAKING CHANGE: These make change in envs path in docker compose">
+      <option name="closed" value="true" />
+      <created>1776644798139</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1776644798139</updated>
+    </task>
+    <task id="LOCAL-00008" summary="feat(ingestion): implement API-Football data ingestion pipeline (Phase 1)&#10;&#10;- Add FootballDataProviderPort and IngestionRepositoryPort protocols with raw DTOs (standings, fixtures, events, player stats) to define the ingestion contract in the domain layer&#10;- Introduce position_mapping module with BASE_POSITION_MAP and KNOWN_POSITIONS dict to resolve EXT/LAT positions that API-Football does not distinguish natively&#10;- Implement APIFootballProvider HTTP adapter using httpx with retry logic (3 attempts, 20s timeout, 10s backoff), rate-limit detection (65s pause on rateLimit error), ROUND_TO_STAGE mapping, and get_score_at_minute helper&#10;- Implement IngestionRepository with idempotent pg_insert upserts for all entities; team upsert uses a two-step strategy to link external_id to already-seeded rows before falling back to insert&#10;- Implement IngestCompetitionUseCase orchestrating the full pipeline: standings → fixture+event fetch for top-N teams → per-player SFA scoring (M1–M4+Mvisit computed individually for storage) → season score accumulation → ingestion log; GK excluded from event scoring, filters ≥20 min/fixture and ≥90 min/season&#10;- Add IngestAllCompetitionsUseCase wrapping the 6 configured leagues with a 7000-request safety guard&#10;- Wire Celery tasks as thin asyncio.run() wrappers and configure Beat schedule (every 8h, season 2024) with autodiscover&#10;- Expose admin endpoints POST /ingest/{league_id} and POST /ingest-all to trigger ingestion manually via Celery&#10;- Add external_id (nullable unique) to Player and Team models to link DB rows to API-Football IDs; add API_FOOTBALL_KEY and API_FOOTBALL_BASE_URL to BaseConfig; add httpx dependency and celery_beat service to docker-compose&#10;&#10;BREAKING CHANGE: Player and Team tables require ALTER TABLE to add the external_id column before running the updated app (no Alembic migration included in this phase).">
+      <option name="closed" value="true" />
+      <created>1776648385109</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1776648385109</updated>
+    </task>
+    <task id="LOCAL-00009" summary="feat(enrichment): implement FBref + Understat enrichment pipeline (Phase 2)&#10;&#10;- Add domain ports and DTOs for FBref/Understat providers and enrichment&#10;  repository, keeping the enrichment layer cleanly separated from ingestion&#10;- Introduce fuzzy Jaccard name-matching service (normalize + token Jaccard +&#10;  surname bonus/penalty) extracted from legacy logic; handles accented names&#10;  and discards ambiguous matches&#10;- Implement FBrefScraper using httpx async + BeautifulSoup with data-stat&#10;  attribute parsing (avoids pandas dependency); 4s rate limit between requests&#10;  with 3-attempt retry&#10;- Implement UnderstatScraper extracting embedded JSON.parse() variable from&#10;  HTML; handles unicode_escape encoding for non-ASCII player names; 2s rate&#10;  limit&#10;- Add EnrichmentRepository with queries to find unmatched goal events, update&#10;  external IDs, update player_stats only where API-Football left zeros, and&#10;  apply delta-based season_score recalculation (preserves match-stats points&#10;  not stored as individual events)&#10;- Add three use cases: EnrichWithFBref (PSxG + season stats), EnrichWithUnderstat&#10;  (PSxG fallback skipping Champions League), RecalculateScores (delta approach&#10;  on M4 recalculation to avoid overwriting match-stats contribution)&#10;- Wire Celery tasks for per-league and full-pipeline enrichment; add beat&#10;  schedule at 2am/14pm UTC offset from ingestion hours (0/8/16 UTC)&#10;- Expose admin endpoints: /enrich-fbref, /enrich-understat, /enrich-all,&#10;  /recalculate for manual triggering&#10;- Extend Player model with fbref_id and understat_id nullable unique fields;&#10;  add migration SQL in comments&#10;- Add beautifulsoup4 and lxml to requirements">
+      <option name="closed" value="true" />
+      <created>1776650219062</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1776650219062</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="SFA-refactor-architecture" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="chore(repo): archive all source code into _archive/ — breakpoint snapshot&#10;&#10;- Move all legacy scripts (api_events_endpoint, api_football_ingest_v5, fetch_photos,&#10;  fix_positions, ingest_team, run, understat_merge_v2) into _archive/ to clean up the root&#10;- Move active backend/ package into _archive/ as a frozen reference snapshot&#10;  before a full rewrite or restructure begins&#10;- Add _archive/README.md documenting each file's purpose and intent&#10;- Update .gitignore to exclude _archive/ from future AI context and tracking&#10;&#10;BREAKING CHANGE: The backend/ package is no longer at the repo root. Any tooling,&#10;imports, or entry points referencing backend/ will break until the package is&#10;re-scaffolded in its new location." />
+    <MESSAGE value="feat(infra): bootstrap SFA backend infrastructure skeleton&#10;&#10;- Scaffold hexagonal project layout under src/sfa/ (api, core, infrastructure, domain)&#10;  to establish a clean separation of concerns from the start&#10;- Implement GET /api/v1/health endpoint that probes DB and Redis on every request,&#10;  returning connection status without ever crashing with a non-200&#10;- Configure three environment classes (Development/Production/Test) via pydantic-settings,&#10;  selected by APP_ENV, mirroring the Django DJANGO_SETTINGS_MODULE pattern;&#10;  SECRET_KEY raises ValueError at startup if missing&#10;- Wire async SQLAlchemy engine (asyncpg) and redis.asyncio client as FastAPI dependencies,&#10;  keeping infrastructure isolated from business logic&#10;- Add Celery stub wired to CELERY_BROKER_URL so worker containers can start immediately&#10;- Split requirements into base/local/production/test to avoid installing dev tools in prod&#10;- Add environment-specific Dockerfiles and executable start scripts under django/development&#10;  and django/production; set PYTHONPATH=/code/src in both images so the src/ layout&#10;  is resolved correctly inside containers (fixes ModuleNotFoundError: No module named 'sfa')&#10;- Provide docker-compose-development.yml and docker-compose-prod.yml with api, db&#10;  (postgres:16-alpine), redis (7-alpine), and celery_worker services&#10;- Add GitHub Actions CI job that spins up Postgres and Redis services, runs flake8,&#10;  isort, coverage (fail-under=80), and pytest&#10;- Configure flake8 (max 120, select E302/E501/F401/F821), isort (black profile),&#10;  and pytest (asyncio_mode=auto) so linters and tests are reproducible locally and in CI&#10;- Add tests/test_health.py with three async cases (all-ok, db-error, redis-error)&#10;  using dependency_overrides — no real infrastructure required to run the suite" />
+    <MESSAGE value="feat(models): implement SFA v2.0 scoring schema changes&#10;&#10;- Add CORNER_ASSIST to EventType enum to distinguish corner assists from&#10;  regular assists, enabling correct 250 vs 500 pts base score assignment&#10;  per position without ambiguity in the SFASeasonScore breakdown&#10;- Add played_at (timestamptz, NOT NULL) and matchday (SmallInteger, nullable)&#10;  to Fixture so M1 can be resolved against the correct StandingSnapshot at&#10;  match time; matchday is nullable to support cups and playoffs&#10;- Add matchday column to StandingSnapshot and include it in the unique&#10;  constraint, enabling per-matchday snapshots required to compute M1&#10;  with historical accuracy instead of only end-of-season position&#10;- Rewrite PlayerStats to align with scoreable statistics: add xg, xa,&#10;  dribbles_won, interceptions, corner_assists; rename aerial_duels_won&#10;  to duels_won (total duels per API-Football); drop through_balls and&#10;  recoveries_own_half which carry zero pts weight in the v2.0 formula&#10;- Add mvisit (Numeric(3,2), default=1.0, CHECK IN (1.0, 1.3)) to&#10;  PlayerEvent to persist the away-team multiplier per event, enabling&#10;  full traceability and future recalculation of pts if the factor changes" />
+    <MESSAGE value="feat(domain): implement SFA scoring engine domain layer&#10;&#10;- Add domain/scoring bounded context with four modules: value_objects,&#10;  entities, services, and a public __init__ re-export — no existing&#10;  files modified; the domain stays completely separate from infrastructure&#10;&#10;- Define PositionGroup (FW/MF/DF) and ActionType (15 actions) enums plus&#10;  position_to_group() which maps the 6 infra positions to scoring groups&#10;  and raises ValueError for GK, keeping the aggregate uncorruptible&#10;&#10;- Implement seven frozen-dataclass value objects (M1–M4, Mvisit,&#10;  CombinedMultiplier, SFAScore), each validating and clamping its&#10;  invariant at construction time so invalid states cannot be represented&#10;&#10;- Define BASE_POINTS_TABLE as the single source of truth for all&#10;  base-point values per group×action, including explicit 0 entries for&#10;  actions that do not apply to a group (CORNER_ASSIST, DRIBBLES_WON,&#10;  PROGRESSIVE_* etc.)&#10;&#10;- Introduce SFAScoringService with two calculation paths: score_event()&#10;  applies all five multipliers (M1–M4 + Mvisit) for individual events&#10;  (goals/assists); score_match_stats() applies only M1 × M2 for&#10;  per-match aggregated statistics that have no exact minute or PSxG&#10;&#10;- Add Player, ScoredEvent (both frozen), and PlayerSeasonScore aggregate&#10;  root whose total_pts is always derived from stored events, making it&#10;  impossible to desync total from the event list from outside the class&#10;&#10;- Validated against the document's worked example: van Dijk (DC, #3)&#10;  scores away vs Arsenal (#1) in min 87 drawing, Champions groups →&#10;  1500 × 4.0 (clamped) = 6000 pts" />
+    <MESSAGE value="feat(api): implement REST API v1 — ranking, players, competitions, compare, status&#10;&#10;- Configure FastAPI with full OpenAPI metadata, Swagger UI at /docs, ReDoc at /redoc,&#10;  and openapi_tags grouping endpoints by domain so the interactive docs are useful&#10;  out of the box&#10;- Add Pydantic response schemas for all endpoints using ConfigDict(from_attributes=True)&#10;  for SQLAlchemy row compatibility; CompareResponseSchema reuses PlayerDetailSchema&#10;  to avoid duplicating the player shape&#10;- Implement GET /ranking with a single SQL query using RANK() OVER and optional&#10;  filters by position/competition/season — replaces the O(n) Python sort in legacy&#10;- Implement GET /players/{id} with global_rank computed via COUNT subquery instead&#10;  of a Python loop; GET /players/{id}/events now exposes m4 and mvisit absent in legacy;&#10;  GET /players/{id}/fixtures aggregates SUM(pts)/COUNT(*) per match — new endpoint&#10;  with no legacy equivalent&#10;- Extract _get_player_detail() as a shared internal function so GET /compare reuses&#10;  it for both players without duplicating query logic&#10;- Implement GET /competitions with competition_factor aliased as factor for client&#10;  compatibility; GET /competitions/{id}/standings resolves latest matchday via&#10;  MAX() subquery when the param is omitted — replaces the single-snapshot legacy approach&#10;- Implement GET /status running async COUNT(*) over each table and returning&#10;  system totals with the latest season and api_version from settings&#10;- Add REST Client .http files for manual testing of all endpoints including&#10;  filter variants and expected 404 cases&#10;- Add docs/api-reference.md as a black-box reference for external consumers,&#10;  independent of Swagger, documenting parameters, response shapes, and status codes" />
+    <MESSAGE value="refactor(architecture): introduce hexagonal application + repository layers; wire use cases via FastAPI DI&#10;&#10;- Add application use cases (get_ranking, get_player_detail, get_player_events, get_player_fixtures, get_standings, list_competitions, get_status, compare_players) to move all business logic out of route handlers — previously inline SQL lived directly in the API layer&#10;- Add infrastructure repositories (PlayerRepository, SFAScoreRepository, CompetitionRepository, StandingRepository, PlayerEventRepository, SystemRepository) as the persistence adapters implementing domain ports&#10;- Add domain/ports.py to define the port interfaces that use cases depend on, decoupling application logic from SQLAlchemy&#10;- Expand dependencies.py to wire repositories and use cases as FastAPI async dependencies, keeping DI declarative and testable without touching route signatures&#10;- Slim all five API routers (ranking, players, competitions, status, compare) to thin HTTP adapters: inject use case via Depends, call execute(), map result to response schema&#10;- Add pythonpath = src to pytest.ini so test modules resolve imports correctly without editable install&#10;- Add specs with plan.md" />
+    <MESSAGE value="refactor: rename /django environment folder to /environment&#10;&#10;BREAKING CHANGE: These make change in envs path in docker compose" />
+    <MESSAGE value="feat(ingestion): implement API-Football data ingestion pipeline (Phase 1)&#10;&#10;- Add FootballDataProviderPort and IngestionRepositoryPort protocols with raw DTOs (standings, fixtures, events, player stats) to define the ingestion contract in the domain layer&#10;- Introduce position_mapping module with BASE_POSITION_MAP and KNOWN_POSITIONS dict to resolve EXT/LAT positions that API-Football does not distinguish natively&#10;- Implement APIFootballProvider HTTP adapter using httpx with retry logic (3 attempts, 20s timeout, 10s backoff), rate-limit detection (65s pause on rateLimit error), ROUND_TO_STAGE mapping, and get_score_at_minute helper&#10;- Implement IngestionRepository with idempotent pg_insert upserts for all entities; team upsert uses a two-step strategy to link external_id to already-seeded rows before falling back to insert&#10;- Implement IngestCompetitionUseCase orchestrating the full pipeline: standings → fixture+event fetch for top-N teams → per-player SFA scoring (M1–M4+Mvisit computed individually for storage) → season score accumulation → ingestion log; GK excluded from event scoring, filters ≥20 min/fixture and ≥90 min/season&#10;- Add IngestAllCompetitionsUseCase wrapping the 6 configured leagues with a 7000-request safety guard&#10;- Wire Celery tasks as thin asyncio.run() wrappers and configure Beat schedule (every 8h, season 2024) with autodiscover&#10;- Expose admin endpoints POST /ingest/{league_id} and POST /ingest-all to trigger ingestion manually via Celery&#10;- Add external_id (nullable unique) to Player and Team models to link DB rows to API-Football IDs; add API_FOOTBALL_KEY and API_FOOTBALL_BASE_URL to BaseConfig; add httpx dependency and celery_beat service to docker-compose&#10;&#10;BREAKING CHANGE: Player and Team tables require ALTER TABLE to add the external_id column before running the updated app (no Alembic migration included in this phase)." />
+    <MESSAGE value="feat(enrichment): implement FBref + Understat enrichment pipeline (Phase 2)&#10;&#10;- Add domain ports and DTOs for FBref/Understat providers and enrichment&#10;  repository, keeping the enrichment layer cleanly separated from ingestion&#10;- Introduce fuzzy Jaccard name-matching service (normalize + token Jaccard +&#10;  surname bonus/penalty) extracted from legacy logic; handles accented names&#10;  and discards ambiguous matches&#10;- Implement FBrefScraper using httpx async + BeautifulSoup with data-stat&#10;  attribute parsing (avoids pandas dependency); 4s rate limit between requests&#10;  with 3-attempt retry&#10;- Implement UnderstatScraper extracting embedded JSON.parse() variable from&#10;  HTML; handles unicode_escape encoding for non-ASCII player names; 2s rate&#10;  limit&#10;- Add EnrichmentRepository with queries to find unmatched goal events, update&#10;  external IDs, update player_stats only where API-Football left zeros, and&#10;  apply delta-based season_score recalculation (preserves match-stats points&#10;  not stored as individual events)&#10;- Add three use cases: EnrichWithFBref (PSxG + season stats), EnrichWithUnderstat&#10;  (PSxG fallback skipping Champions League), RecalculateScores (delta approach&#10;  on M4 recalculation to avoid overwriting match-stats contribution)&#10;- Wire Celery tasks for per-league and full-pipeline enrichment; add beat&#10;  schedule at 2am/14pm UTC offset from ingestion hours (0/8/16 UTC)&#10;- Expose admin endpoints: /enrich-fbref, /enrich-understat, /enrich-all,&#10;  /recalculate for manual triggering&#10;- Extend Player model with fbref_id and understat_id nullable unique fields;&#10;  add migration SQL in comments&#10;- Add beautifulsoup4 and lxml to requirements" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(enrichment): implement FBref + Understat enrichment pipeline (Phase 2)&#10;&#10;- Add domain ports and DTOs for FBref/Understat providers and enrichment&#10;  repository, keeping the enrichment layer cleanly separated from ingestion&#10;- Introduce fuzzy Jaccard name-matching service (normalize + token Jaccard +&#10;  surname bonus/penalty) extracted from legacy logic; handles accented names&#10;  and discards ambiguous matches&#10;- Implement FBrefScraper using httpx async + BeautifulSoup with data-stat&#10;  attribute parsing (avoids pandas dependency); 4s rate limit between requests&#10;  with 3-attempt retry&#10;- Implement UnderstatScraper extracting embedded JSON.parse() variable from&#10;  HTML; handles unicode_escape encoding for non-ASCII player names; 2s rate&#10;  limit&#10;- Add EnrichmentRepository with queries to find unmatched goal events, update&#10;  external IDs, update player_stats only where API-Football left zeros, and&#10;  apply delta-based season_score recalculation (preserves match-stats points&#10;  not stored as individual events)&#10;- Add three use cases: EnrichWithFBref (PSxG + season stats), EnrichWithUnderstat&#10;  (PSxG fallback skipping Champions League), RecalculateScores (delta approach&#10;  on M4 recalculation to avoid overwriting match-stats contribution)&#10;- Wire Celery tasks for per-league and full-pipeline enrichment; add beat&#10;  schedule at 2am/14pm UTC offset from ingestion hours (0/8/16 UTC)&#10;- Expose admin endpoints: /enrich-fbref, /enrich-understat, /enrich-all,&#10;  /recalculate for manual triggering&#10;- Extend Player model with fbref_id and understat_id nullable unique fields;&#10;  add migration SQL in comments&#10;- Add beautifulsoup4 and lxml to requirements" />
+  </component>
+</project>

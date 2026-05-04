@@ -1,0 +1,22 @@
+### Ranking completo (última temporada, límite 10)
+GET http://localhost:8000/api/v1/ranking?limit=10
+
+###
+
+### Ranking para temporada específica
+GET http://localhost:8000/api/v1/ranking?season=2024-25&limit=10
+
+###
+
+### Ranking filtrado por posición
+GET http://localhost:8000/api/v1/ranking?season=2024-25&position=DEL
+
+###
+
+### Ranking filtrado por competición
+GET http://localhost:8000/api/v1/ranking?season=2024-25&competition_id=1
+
+###
+
+### Ranking filtrado por posición y competición
+GET http://localhost:8000/api/v1/ranking?season=2024-25&position=EXT&competition_id=1&limit=20

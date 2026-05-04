@@ -1,0 +1,77 @@
+### Ingestar una liga especifica (La Liga, temporada 2024)
+POST http://localhost:8000/api/v1/admin/ingest/140?season=2024
+
+###
+
+### Ingestar Premier League
+POST http://localhost:8000/api/v1/admin/ingest/39?season=2024
+
+###
+
+### Ingestar Bundesliga
+POST http://localhost:8000/api/v1/admin/ingest/78?season=2024
+
+###
+
+### Ingestar Serie A
+POST http://localhost:8000/api/v1/admin/ingest/135?season=2024
+
+###
+
+### Ingestar Ligue 1
+POST http://localhost:8000/api/v1/admin/ingest/61?season=2024
+
+###
+
+### Ingestar Champions League
+POST http://localhost:8000/api/v1/admin/ingest/2?season=2024
+
+###
+
+### Ingestar todas las ligas configuradas
+POST http://localhost:8000/api/v1/admin/ingest-all?season=2024
+
+###
+
+### Enriquecer con FBref — La Liga
+POST http://localhost:8000/api/v1/admin/enrich-fbref/1?competition_name=La%20Liga&season=2024
+
+###
+
+### Enriquecer con FBref — Premier League
+POST http://localhost:8000/api/v1/admin/enrich-fbref/2?competition_name=Premier%20League&season=2024
+
+###
+
+### Enriquecer con FBref — Champions League
+POST http://localhost:8000/api/v1/admin/enrich-fbref/3?competition_name=Champions%20League&season=2024
+
+###
+
+### Enriquecer con Understat — La Liga
+POST http://localhost:8000/api/v1/admin/enrich-understat/1?competition_name=La%20Liga&season=2024&season_int=2024
+
+###
+
+### Enriquecer con Understat — Premier League
+POST http://localhost:8000/api/v1/admin/enrich-understat/2?competition_name=Premier%20League&season=2024&season_int=2024
+
+###
+
+### Enriquecimiento completo de todas las ligas (FBref + Understat + Recalculo)
+POST http://localhost:8000/api/v1/admin/enrich-all?season=2024&season_int=2024
+
+###
+
+### Recalcular scores — La Liga (util despues de cambiar parametros de scoring)
+POST http://localhost:8000/api/v1/admin/recalculate/1?season=2024
+
+###
+
+### Recalcular scores — Premier League
+POST http://localhost:8000/api/v1/admin/recalculate/2?season=2024
+
+###
+
+### Ver logs de ingestion (pendiente implementacion)
+GET http://localhost:8000/api/v1/admin/ingestion-logs
