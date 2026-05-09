@@ -1,0 +1,12 @@
+venv/
+_pycache_/
+*.pyc
+.env
+.env.prod
+.env.local
+.DS_Store
+.vscode/
+# AI agent context exclusion — legacy scripts
+_archive/
+# Local Claude Code settings (may contain credentials)
+.claude/settings.local.json

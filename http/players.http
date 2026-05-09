@@ -1,0 +1,42 @@
+### Detalle de jugador (última temporada)
+GET http://localhost:8000/api/v1/players/1
+
+###
+
+### Detalle de jugador en temporada específica
+GET http://localhost:8000/api/v1/players/1?season=2024-25
+
+###
+
+### Jugador inexistente (espera 404)
+GET http://localhost:8000/api/v1/players/999999
+
+###
+
+### Eventos del jugador (última temporada)
+GET http://localhost:8000/api/v1/players/1/events
+
+###
+
+### Eventos del jugador en temporada específica
+GET http://localhost:8000/api/v1/players/1/events?season=2024-25
+
+###
+
+### Eventos filtrados por competición
+GET http://localhost:8000/api/v1/players/1/events?season=2024-25&competition_id=1
+
+###
+
+### Fixtures del jugador (última temporada)
+GET http://localhost:8000/api/v1/players/1/fixtures
+
+###
+
+### Fixtures del jugador en temporada específica
+GET http://localhost:8000/api/v1/players/1/fixtures?season=2024-25
+
+###
+
+### Fixtures filtrados por competición
+GET http://localhost:8000/api/v1/players/1/fixtures?season=2024-25&competition_id=1

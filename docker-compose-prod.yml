@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: enviroments/production/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.prod
+    depends_on:
+      - db
+      - redis
+    command: /start
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sfa
+      POSTGRES_PASSWORD: sfa
+      POSTGRES_DB: sfa
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: enviroments/production/Dockerfile
+    env_file:
+      - .env.prod
+    depends_on:
+      - db
+      - redis
+    command: celery -A sfa.celery_app worker --loglevel=info
+
+volumes:
+  postgres_data:

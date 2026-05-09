@@ -1,0 +1,7 @@
+### Estado del sistema
+GET http://localhost:8000/api/v1/status
+
+###
+
+### Health check de infraestructura
+GET http://localhost:8000/api/v1/health

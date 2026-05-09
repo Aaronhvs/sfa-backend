@@ -1,0 +1,41 @@
+### SFA — Download & Calculate flow
+###
+### Flujo RAW → CALCULADO:
+###   1. POST /admin/ingest/{league_id}  →  DownloadPlayerDataUseCase (descarga RAW)
+###                                         + CalculateSFAFromRawUseCase (calcula SFA)
+###   2. POST /admin/recalculate         →  CalculateSFAFromRawUseCase solo (sin API calls)
+###   3. POST /admin/ingest-all          →  idem para todas las ligas configuradas
+###   4. GET  /status                    →  verifica estado post-ingestion
+###
+### Variables: ajusta @baseUrl y @season según el entorno.
+
+@baseUrl = http://localhost:8000/api/v1
+@season = 2024
+@competitionId = 1
+
+
+### 1. Trigger download + calculate — La Liga (league_id=140)
+# Dispara ingest_competition_task en Celery.
+# Ejecuta en secuencia: DownloadPlayerDataUseCase → CalculateSFAFromRawUseCase.
+# Idempotente: fixtures ya descargados se saltan sin consumir requests de API.
+POST {{baseUrl}}/admin/ingest/140?season={{season}}
+Content-Type: application/json
+
+
+### 2. Recalculate SFA from RAW — sin llamadas a la API
+# Dispara recalculate_sfa_task en Celery.
+# Solo ejecuta CalculateSFAFromRawUseCase. Útil tras cambios en la fórmula SFA.
+POST {{baseUrl}}/admin/recalculate?competition_id={{competitionId}}&season={{season}}
+Content-Type: application/json
+
+
+### 3. Trigger download + calculate — todas las ligas
+# Dispara ingest_all_competitions_task en Celery.
+# Itera LEAGUES en orden; se detiene si requests_used >= 7000.
+POST {{baseUrl}}/admin/ingest-all?season={{season}}
+Content-Type: application/json
+
+
+### 4. Verificar estado post-ingestion
+# Retorna counts de jugadores, fixtures y última fecha de ingestion.
+GET {{baseUrl}}/status

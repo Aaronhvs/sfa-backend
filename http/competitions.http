@@ -1,0 +1,22 @@
+### Listar todas las competiciones
+GET http://localhost:8000/api/v1/competitions
+
+###
+
+### Standings de una competición (última temporada, última jornada)
+GET http://localhost:8000/api/v1/competitions/1/standings
+
+###
+
+### Standings de una competición en temporada específica
+GET http://localhost:8000/api/v1/competitions/1/standings?season=2024
+
+###
+
+### Standings en jornada específica (solo disponible si se ingirió esa jornada)
+GET http://localhost:8000/api/v1/competitions/1/standings?season=2024&matchday=38
+
+###
+
+### Competición inexistente (espera 404)
+GET http://localhost:8000/api/v1/competitions/999/standings

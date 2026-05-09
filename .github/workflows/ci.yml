@@ -1,0 +1,68 @@
+name: SFA CI 🚦
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+
+jobs:
+  ci:
+    name: SFA CI 🚦
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: sfa_test
+          POSTGRES_USER: sfa
+          POSTGRES_PASSWORD: sfa
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      APP_ENV: test
+      SECRET_KEY: test-secret-key-for-ci
+      DATABASE_URL: postgresql+asyncpg://sfa:sfa@localhost:5432/sfa_test
+      REDIS_URL: redis://localhost:6379/0
+      CELERY_BROKER_URL: redis://localhost:6379/0
+    steps:
+      - name: 🛎️ Checkout code
+        uses: actions/checkout@v4
+      - name: 🐍 Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/local.txt -r requirements/test.txt
+      - name: 🔍 Check max line length (flake8)
+        run: flake8 src/ tests/
+      - name: 📚 Check import order (isort)
+        run: isort --check-only --diff src/ tests/
+      - name: 📊 Run coverage
+        run: |
+          coverage run -m pytest tests/
+          coverage report --fail-under=80 --skip-empty
+          coverage xml --skip-empty
+      - name: 📈 Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+      - name: 🧪 Run tests
+        run: pytest tests/
