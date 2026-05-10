@@ -8,6 +8,7 @@ from sfa.domain.ingestion_ports import (
     FixtureEventRawDTO,
     FootballDataProviderPort,
     IngestionRepositoryPort,
+    LeagueConfigDTO,
 )
 from sfa.domain.position_mapping import map_position
 from sfa.domain.scoring.services import BASE_POINTS_TABLE, SFAScoringService
@@ -26,19 +27,6 @@ from sfa.infrastructure.models.enums import EventType, IngestionStatus, Position
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# League configuration
-# ---------------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class LeagueConfig:
-    id: int
-    name: str
-    country: str
-    comp_factor: float
-    top_n: int
-
 
 @dataclass(frozen=True)
 class IngestionResult:
@@ -47,16 +35,6 @@ class IngestionResult:
     fixtures_processed: int
     status: str
     error: str | None
-
-
-LEAGUES: list[LeagueConfig] = [
-    LeagueConfig(id=140, name="La Liga",          country="ESP", comp_factor=1.0, top_n=6),
-    LeagueConfig(id=39,  name="Premier League",   country="ENG", comp_factor=1.0, top_n=6),
-    LeagueConfig(id=78,  name="Bundesliga",       country="GER", comp_factor=1.0, top_n=6),
-    LeagueConfig(id=135, name="Serie A",          country="ITA", comp_factor=1.0, top_n=6),
-    LeagueConfig(id=61,  name="Ligue 1",          country="FRA", comp_factor=1.0, top_n=6),
-    LeagueConfig(id=2,   name="Champions League", country="EUR", comp_factor=1.5, top_n=24),
-]
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -107,7 +85,7 @@ class IngestCompetitionUseCase:
         self._repo = repo
         self._scoring = scoring
 
-    async def execute(self, league: LeagueConfig, season: int) -> IngestionResult:
+    async def execute(self, league: LeagueConfigDTO, season: int) -> IngestionResult:
         competition_id: int | None = None
         players_processed = 0
         fixtures_processed = 0
@@ -116,7 +94,7 @@ class IngestCompetitionUseCase:
 
         try:
             # --- Phase 1: Standings ---
-            standings = await self._provider.fetch_standings(league.id, season)
+            standings = await self._provider.fetch_standings(league.external_id, season)
             if not standings:
                 return IngestionResult(
                     competition=league.name,
@@ -126,9 +104,7 @@ class IngestCompetitionUseCase:
                     error=None,
                 )
 
-            competition_id = await self._repo.upsert_competition(
-                league.name, league.country, league.comp_factor
-            )
+            competition_id = league.competition_id
 
             matchday = max((s.played for s in standings), default=0)
             pos_cache: dict[int, int] = {}
@@ -154,7 +130,7 @@ class IngestCompetitionUseCase:
             for team_standing in top_teams:
                 team_ext_id = team_standing.team_external_id
                 fixtures = await self._provider.fetch_team_fixtures(
-                    team_ext_id, league.id, season
+                    team_ext_id, league.external_id, season
                 )
 
                 for fixture in fixtures:

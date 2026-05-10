@@ -1,4 +1,5 @@
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, Numeric, String, UniqueConstraint
+from sqlalchemy import CheckConstraint, ForeignKey, Integer, Numeric, String, UniqueConstraint, text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from sfa.infrastructure.database import Base
@@ -13,9 +14,12 @@ class Competition(Base):
     competition_factor: Mapped[float] = mapped_column(
         Numeric(4, 2), nullable=False, default=1.0
     )
+    top_n: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("6"))
+    providers: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
 
     __table_args__ = (
         CheckConstraint("competition_factor > 0", name="ck_competition_factor_positive"),
+        CheckConstraint("top_n > 0", name="ck_competition_top_n_positive"),
     )
 
 

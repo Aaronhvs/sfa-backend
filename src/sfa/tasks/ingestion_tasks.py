@@ -22,22 +22,24 @@ def ingest_all_competitions_task(self, season: int):
 
 
 async def _run_ingest_competition(league_id: int, season: int):
-    from sfa.application.use_cases.ingest_competition import LEAGUES, IngestCompetitionUseCase
+    from sfa.application.use_cases.ingest_competition import IngestCompetitionUseCase
     from sfa.core.config import get_settings
     from sfa.domain.scoring.services import SFAScoringService
     from sfa.infrastructure.database import AsyncSessionLocal
     from sfa.infrastructure.providers.api_football import APIFootballProvider
     from sfa.infrastructure.repositories.ingestion_repository import IngestionRepository
+    from sfa.infrastructure.repositories.league_config_repository import LeagueConfigRepository
 
     settings = get_settings()
     provider = APIFootballProvider(settings.API_FOOTBALL_KEY, settings.API_FOOTBALL_BASE_URL)
     scoring = SFAScoringService()
 
-    league = next((l for l in LEAGUES if l.id == league_id), None)
-    if league is None:
-        raise ValueError(f"League not found: {league_id}")
-
     async with AsyncSessionLocal() as session:
+        league_config_repo = LeagueConfigRepository(session)
+        league = await league_config_repo.get_league_by_external_id("api-football", league_id)
+        if league is None:
+            raise ValueError(f"League not found: {league_id}")
+
         repo = IngestionRepository(session)
         use_case = IngestCompetitionUseCase(provider, repo, scoring)
         result = await use_case.execute(league, season)
@@ -53,6 +55,7 @@ async def _run_ingest_all(season: int):
     from sfa.infrastructure.database import AsyncSessionLocal
     from sfa.infrastructure.providers.api_football import APIFootballProvider
     from sfa.infrastructure.repositories.ingestion_repository import IngestionRepository
+    from sfa.infrastructure.repositories.league_config_repository import LeagueConfigRepository
 
     settings = get_settings()
     provider = APIFootballProvider(settings.API_FOOTBALL_KEY, settings.API_FOOTBALL_BASE_URL)
@@ -60,7 +63,8 @@ async def _run_ingest_all(season: int):
 
     async with AsyncSessionLocal() as session:
         repo = IngestionRepository(session)
-        use_case = IngestAllCompetitionsUseCase(provider, repo, scoring)
+        league_config_repo = LeagueConfigRepository(session)
+        use_case = IngestAllCompetitionsUseCase(provider, repo, scoring, league_config_repo)
         results = await use_case.execute(season)
         await session.commit()
 

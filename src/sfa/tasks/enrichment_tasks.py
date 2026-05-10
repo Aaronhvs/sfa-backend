@@ -104,12 +104,24 @@ async def _run_recalculate(competition_id: int, season: str) -> None:
 
 
 async def _run_enrich_all(season: str, season_int: int) -> None:
-    from sfa.application.use_cases.ingest_competition import LEAGUES
+    import logging
 
-    for league in LEAGUES:
+    from sfa.infrastructure.database import AsyncSessionLocal
+    from sfa.infrastructure.repositories.league_config_repository import LeagueConfigRepository
+
+    logger = logging.getLogger(__name__)
+
+    async with AsyncSessionLocal() as session:
+        league_config_repo = LeagueConfigRepository(session)
+        leagues = await league_config_repo.get_all_active_leagues("api-football")
+
+    for league in leagues:
+        if not league.competition_id:
+            logger.warning("[_run_enrich_all] Invalid competition_id for league %s, skipping", league.name)
+            continue
         # FBref
-        await _run_enrich_fbref(league.name, league.id, season)
+        await _run_enrich_fbref(league.name, league.competition_id, season)
         # Understat (skips Champions League internally)
-        await _run_enrich_understat(league.name, league.id, season, season_int)
+        await _run_enrich_understat(league.name, league.competition_id, season, season_int)
         # Recalculate
-        await _run_recalculate(league.id, season)
+        await _run_recalculate(league.competition_id, season)

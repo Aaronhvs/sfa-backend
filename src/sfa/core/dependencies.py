@@ -5,17 +5,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from sfa.infrastructure.database import get_db
 from sfa.infrastructure.redis_client import get_redis
-
-# ─── Repositorios ────────────────────────────────────────────────────
-
 from sfa.infrastructure.repositories import (
     CompetitionRepository,
+    LeagueConfigRepository,
     PlayerEventRepository,
     PlayerRepository,
     SFAScoreRepository,
     StandingRepository,
     SystemRepository,
 )
+
+# ─── Repositorios ────────────────────────────────────────────────────
+
+
+async def get_league_config_repository(
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> LeagueConfigRepository:
+    return LeagueConfigRepository(db)
 
 
 async def get_player_repository(

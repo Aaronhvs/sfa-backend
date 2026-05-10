@@ -2,7 +2,25 @@
 
 ---
 
-## 1. Implementar archivos .http faltantes y probar flujo completo
+## 1. Migrar de `create_all` a Alembic
+
+El proyecto usa `Base.metadata.create_all` en el lifespan de FastAPI. Esto no soporta
+migraciones incrementales: si una tabla ya existe, no la modifica. Es deuda técnica que
+bloquea tener data migrations automáticas (como las de Django).
+
+**Tareas:**
+- [ ] Instalar y configurar Alembic con el engine async de SQLAlchemy
+- [ ] Generar la migración inicial a partir del schema actual (`alembic revision --autogenerate`)
+- [ ] Reemplazar `Base.metadata.create_all` en `main.py` por `alembic upgrade head`
+- [ ] Crear spec en `specs/refactor/` para documentar las decisiones
+
+**Impacto directo:** el refactor `0002-league-config-and-provider-registry` necesita una
+data migration para cargar los registros de `LEAGUES` → `league_configs` + `providers` +
+`league_provider_mappings` automáticamente al hacer `alembic upgrade head`.
+
+---
+
+## 2. Implementar archivos .http faltantes y probar flujo completo
 
 Crear `http/admin.http` con todos los endpoints de admin, y verificar que el
 flujo completo de ingesta funciona end-to-end.
@@ -15,7 +33,7 @@ flujo completo de ingesta funciona end-to-end.
 - `http/status.http` ✓
 
 **Pendiente crear:**
-- [ ] `http/admin.http` — todos los endpoints `POST /admin/*`:
+- [x] `http/admin.http` — todos los endpoints `POST /admin/*`:
   - `POST /admin/ingest/{league_id}`
   - `POST /admin/ingest-all`
   - `POST /admin/enrich-fbref/{competition_id}`
@@ -25,13 +43,13 @@ flujo completo de ingesta funciona end-to-end.
   - `GET /admin/ingestion-logs`
 
 **Flujo completo a probar:**
-- [ ] Levantar stack con Docker Compose
-- [ ] Correr migraciones
-- [ ] `POST /admin/ingest/140` (La Liga, season=2024)
-- [ ] Verificar datos en `GET /ranking`
-- [ ] `POST /admin/enrich-fbref/1?competition_name=La+Liga&season=2024`
-- [ ] `POST /admin/enrich-understat/1?competition_name=La+Liga&season=2024&season_int=2024`
-- [ ] Verificar que los scores cambiaron en `GET /players/{id}/events`
+- [x] Levantar stack con Docker Compose
+- [x] Correr migraciones
+- [x] `POST /admin/ingest/140` (La Liga, season=2024)
+- [x] Verificar datos en `GET /ranking`
+- [x] `POST /admin/enrich-fbref/1?competition_name=La+Liga&season=2024`
+- [x] `POST /admin/enrich-understat/1?competition_name=La+Liga&season=2024&season_int=2024`
+- [x] Verificar que los scores cambiaron en `GET /players/{id}/events`
 
 ---
 
@@ -44,7 +62,17 @@ flujo completo de ingesta funciona end-to-end.
 
 ---
 
-## 3. UI en React (post-optimización backend)
+## 3. Evaluar qué endpoints requieren auth
+
+Revisar todos los routers en `api/v1/` y determinar cuáles deben estar protegidos:
+- [ ] Mapear cada endpoint con su nivel de exposición (público / interno / admin)
+- [ ] Definir estrategia de autenticación (API key, JWT, OAuth2)
+- [ ] Identificar endpoints de admin que deben bloquearse en producción
+- [ ] Decidir si se implementa auth a nivel de router o middleware
+
+---
+
+## 4. UI en React (post-optimización backend)
 
 Una vez el backend esté estable y optimizado:
 - Scaffoldear proyecto React (Vite)
@@ -54,7 +82,7 @@ Una vez el backend esté estable y optimizado:
 
 ---
 
-## 4. Auditoría de Variables Hardcodeadas
+## 5. Auditoría de Variables Hardcodeadas
 
 Rastrear todas las variables con valores fijos en el código y evaluar cada una:
 - `KNOWN_POSITIONS` (`domain/position_mapping.py`) — lista manual de jugadores

@@ -8,6 +8,25 @@ from sfa.infrastructure.models.enums import EventType, IngestionStatus, Position
 
 
 @dataclass(frozen=True)
+class LeagueConfigDTO:
+    competition_id: int
+    external_id: int
+    name: str
+    country: str
+    comp_factor: float
+    top_n: int
+
+
+@runtime_checkable
+class LeagueConfigRepositoryPort(Protocol):
+    async def get_all_active_leagues(self, provider_name: str) -> list[LeagueConfigDTO]: ...
+
+    async def get_league_by_external_id(
+        self, provider_name: str, external_id: int,
+    ) -> LeagueConfigDTO | None: ...
+
+
+@dataclass(frozen=True)
 class StandingRawDTO:
     team_external_id: int
     team_name: str
