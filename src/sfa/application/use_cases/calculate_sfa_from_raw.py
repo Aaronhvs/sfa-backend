@@ -317,7 +317,7 @@ class CalculateSFAFromRawUseCase:
 
         m1 = M1RivalDifficulty(player_team_pos, rival_pos)
         m2 = M2CompetitionStage(stage_factor)
-        m3 = M3MinuteScore(clamped, score_diff, is_penalty)
+        m3 = M3MinuteScore(clamped, score_diff)
         m4 = M4ShotDifficulty(psxg)
         mvisit = MvisitFactor(is_away, True)
         combined = CombinedMultiplier(m1, m2, m3, m4, mvisit)

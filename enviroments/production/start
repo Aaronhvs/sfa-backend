@@ -1,0 +1,10 @@
+#!/bin/sh
+set -o errexit
+set -o nounset
+
+gunicorn sfa.main:app \
+  --bind 0.0.0.0:8000 \
+  --workers 3 \
+  --worker-class uvicorn.workers.UvicornWorker \
+  --access-logfile - \
+  --log-level=info

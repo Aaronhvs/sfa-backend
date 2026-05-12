@@ -84,15 +84,14 @@ class M3MinuteScore:
     Zero      → drawing
     Positive  → winning
 
-    Penalty events always yield 0.6 regardless of minute/score.
+    Penalties use the same minute/score logic as regular goals — their lower
+    base_pts already encode the reduced value of a penalty goal.
     """
 
     value: float
 
-    def __init__(self, minute: int, score_diff: int, is_penalty: bool) -> None:
-        if is_penalty:
-            v = 0.6
-        elif 80 <= minute <= 90:
+    def __init__(self, minute: int, score_diff: int) -> None:
+        if 80 <= minute <= 90:
             if score_diff <= 0:
                 v = 2.5
             elif score_diff == 1:

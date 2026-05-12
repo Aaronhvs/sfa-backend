@@ -26,51 +26,51 @@ BASE_POINTS_TABLE: dict[PositionGroup, dict[ActionType, int]] = {
         ActionType.GOAL_PENALTY: 300,
         ActionType.ASSIST: 500,
         ActionType.CORNER_ASSIST: 250,
-        ActionType.XG_NO_GOAL: 250,
-        ActionType.XA_NO_ASSIST: 250,
-        ActionType.DRIBBLES_WON: 50,
-        ActionType.DUELS_WON: 100,
-        ActionType.TACKLES_INTERCEPTIONS: 250,
+        ActionType.XG_NO_GOAL: 120,
+        ActionType.XA_NO_ASSIST: 180,
+        ActionType.DRIBBLES_WON: 100,
+        ActionType.DUELS_WON: 80,
+        ActionType.TACKLES_INTERCEPTIONS: 180,
         ActionType.BLOCKS: 250,
-        ActionType.PROGRESSIVE_PASSES: 0,
-        ActionType.PROGRESSIVE_CARRIES: 0,
-        ActionType.PRESSURES_SUCCESS: 0,
-        ActionType.RECOVERIES_OPP_HALF: 0,
-        ActionType.CLEARANCES_GOAL_LINE: 0,
+        ActionType.PROGRESSIVE_PASSES: 100,
+        ActionType.PROGRESSIVE_CARRIES: 120,
+        ActionType.PRESSURES_SUCCESS: 100,
+        ActionType.RECOVERIES_OPP_HALF: 150,
+        ActionType.CLEARANCES_GOAL_LINE: 1500,
     },
     PositionGroup.MF: {
-        ActionType.GOAL: 800,
-        ActionType.GOAL_PENALTY: 500,
-        ActionType.ASSIST: 600,
-        ActionType.CORNER_ASSIST: 0,
-        ActionType.XG_NO_GOAL: 400,
-        ActionType.XA_NO_ASSIST: 500,
-        ActionType.DRIBBLES_WON: 300,
+        ActionType.GOAL: 850,
+        ActionType.GOAL_PENALTY: 450,
+        ActionType.ASSIST: 650,
+        ActionType.CORNER_ASSIST: 350,
+        ActionType.XG_NO_GOAL: 220,
+        ActionType.XA_NO_ASSIST: 300,
+        ActionType.DRIBBLES_WON: 180,
         ActionType.DUELS_WON: 100,
-        ActionType.TACKLES_INTERCEPTIONS: 200,
-        ActionType.BLOCKS: 150,
-        ActionType.PROGRESSIVE_PASSES: 200,
-        ActionType.PROGRESSIVE_CARRIES: 200,
-        ActionType.PRESSURES_SUCCESS: 150,
-        ActionType.RECOVERIES_OPP_HALF: 200,
-        ActionType.CLEARANCES_GOAL_LINE: 500,
+        ActionType.TACKLES_INTERCEPTIONS: 140,
+        ActionType.BLOCKS: 180,
+        ActionType.PROGRESSIVE_PASSES: 150,
+        ActionType.PROGRESSIVE_CARRIES: 160,
+        ActionType.PRESSURES_SUCCESS: 130,
+        ActionType.RECOVERIES_OPP_HALF: 180,
+        ActionType.CLEARANCES_GOAL_LINE: 1200,
     },
     PositionGroup.DF: {
-        ActionType.GOAL: 1500,
+        ActionType.GOAL: 1300,
         ActionType.GOAL_PENALTY: 500,
-        ActionType.ASSIST: 1000,
-        ActionType.CORNER_ASSIST: 0,
-        ActionType.XG_NO_GOAL: 400,
-        ActionType.XA_NO_ASSIST: 500,
-        ActionType.DRIBBLES_WON: 0,
-        ActionType.DUELS_WON: 400,
-        ActionType.TACKLES_INTERCEPTIONS: 400,
-        ActionType.BLOCKS: 300,
-        ActionType.PROGRESSIVE_PASSES: 200,
-        ActionType.PROGRESSIVE_CARRIES: 200,
-        ActionType.PRESSURES_SUCCESS: 150,
-        ActionType.RECOVERIES_OPP_HALF: 200,
-        ActionType.CLEARANCES_GOAL_LINE: 500,
+        ActionType.ASSIST: 950,
+        ActionType.CORNER_ASSIST: 450,
+        ActionType.XG_NO_GOAL: 350,
+        ActionType.XA_NO_ASSIST: 450,
+        ActionType.DRIBBLES_WON: 280,
+        ActionType.DUELS_WON: 120,
+        ActionType.TACKLES_INTERCEPTIONS: 100,
+        ActionType.BLOCKS: 120,
+        ActionType.PROGRESSIVE_PASSES: 180,
+        ActionType.PROGRESSIVE_CARRIES: 220,
+        ActionType.PRESSURES_SUCCESS: 120,
+        ActionType.RECOVERIES_OPP_HALF: 160,
+        ActionType.CLEARANCES_GOAL_LINE: 900,
     },
 }
 
@@ -105,7 +105,6 @@ class SFAScoringService:
         stage_factor: float,
         minute: int,
         score_diff: int,
-        is_penalty: bool,
         psxg: float | None,
         is_away: bool,
     ) -> SFAScore:
@@ -120,7 +119,7 @@ class SFAScoringService:
 
         m1 = M1RivalDifficulty(player_team_pos, rival_team_pos)
         m2 = M2CompetitionStage(stage_factor)
-        m3 = M3MinuteScore(minute, score_diff, is_penalty)
+        m3 = M3MinuteScore(minute, score_diff)
         m4 = M4ShotDifficulty(psxg if is_goal_or_assist else None)
         mvisit = MvisitFactor(is_away, is_goal_or_assist)
         combined = CombinedMultiplier(m1, m2, m3, m4, mvisit)
@@ -147,7 +146,7 @@ class SFAScoringService:
         """
         m1 = M1RivalDifficulty(player_team_pos, rival_team_pos)
         m2 = M2CompetitionStage(stage_factor)
-        m3 = M3MinuteScore(minute=1, score_diff=0, is_penalty=False)  # neutral
+        m3 = M3MinuteScore(minute=1, score_diff=0)  # neutral
         m4 = M4ShotDifficulty(psxg=None)  # neutral: 1.0
         mvisit = MvisitFactor(is_away=False, is_goal_or_assist=False)  # neutral: 1.0
         combined = CombinedMultiplier(m1, m2, m3, m4, mvisit)
